@@ -29,7 +29,7 @@ then
 else
 printf "zone \"$zoneName\"{\ntype master;\nfile \"/etc/bind/db.$zoneName\";\n};" >> /etc/bind/named.conf
 fi
-
+passReconf="false"
 if test -f "/etc/bind/db.$zoneName"
 then
 	printf "\nFile /etc/bind/db.$zoneName exist. Remove ? (y/N) :"
@@ -37,12 +37,13 @@ then
 	if [ "$response" = "y" ] | [ "$response" = "Y" ]
 	then
 		rm "/etc/bind/db.$zoneName"
-	fi
 	else
-	echo "Exiting..."
-	exit
+	passReconf="true"
 	fi
+fi
 
+if [ "$passReconf" = "false" ]
+then
 email=""
 
 while [ -z "$email" ]
@@ -65,6 +66,8 @@ do
 done
 
 printf "\nns A $nsIP" >> /etc/bind/db.$zoneName
+
+fi
 
 choice="4"
 
@@ -144,4 +147,4 @@ read response
         fi
 echo "Starting bind9..."
 systemctl start bind9
-systemctl status bind9
+echo systemctl status bind9
