@@ -32,7 +32,7 @@ fi
 
 if test -f "/etc/bind/db.$zoneName"
 then
-	printf "\nFile /etc/bind/db.$zoneName exist. Remove ? (Y/n) :"
+	printf "\nFile /etc/bind/db.$zoneName exist. Remove ? (y/N) :"
 	read response
 	if [ "$response" = "y" ] | [ "$response" = "Y" ]
 	then
@@ -41,7 +41,7 @@ then
 	else
 	echo "Exiting..."
 	exit
-fi
+	fi
 
 email=""
 
@@ -134,3 +134,14 @@ done
 printf " \n"
 named-checkconf /etc/bind/named.conf
 named-checkzone $zoneName /etc/bind/db.$zoneName
+echo "Enable bind9 on startup ? (y/N)"
+read response
+        if [ "$response" = "y" ] | [ "$response" = "Y" ]
+        then
+                systemctl enable bind9
+        fi
+        exit
+        fi
+echo "Starting bind9..."
+systemctl start bind9
+systemctl status bind9
