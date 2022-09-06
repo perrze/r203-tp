@@ -137,25 +137,23 @@ done
 printf " \n"
 named-checkconf /etc/bind/named.conf
 named-checkzone $zoneName /etc/bind/db.$zoneName
-if grep -Fxq "forwarders{" /etc/bind/named.conf.options
-then
 
-else
+mv /etc/bind/named.conf.options /etc/bind/named.conf.options.bak
 forward="8.8.8.8"
 echo "Enter nameserver fowarders: (8.8.8.8)"
 read forward
 if [ -z "$forward" ]
 then
-	printf "forwarders{\n8.8.8.8 ;\n};" >> /etc/bind/named.conf.options
+	printf "options {\n directory \"/var/cache/bind\";\nforwarders{\n8.8.8.8 ;\n};\ndnssec-validation auto;\nauth-nxdomain no;\n};" >> /etc/bind/named.conf.options
 else
 	while [ $(check_ip "$forward") != "true" ]
 	do
 		echo "Enter nameserver fowarders: "
 		read forward
 	done
-	printf "forwarders{\n$forward ;\n};" >> /etc/bind/named.conf.options
+	printf "options {\n directory \"/var/cache/bind\";\nforwarders{\n$forward ;\n};\ndnssec-validation auto;\nauth-nxdomain no;\n};" >> /etc/bind/named.conf.options
 fi
-fi
+
 echo "Enable bind9 on startup ? (y/N)"
 read response
         if [ "$response" = "y" ] | [ "$response" = "Y" ]
