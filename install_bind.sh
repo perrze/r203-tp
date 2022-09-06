@@ -22,7 +22,7 @@ do
 echo "Enter zone name: "
 read zoneName
 done
-
+cp /etc/bind/named.conf /etc/bind/named.conf.bak
 if grep -Fxq "zone \"$zoneName\"{" /etc/bind/named.conf
 then
 	printf "\nZone already exist in /etc/bind/named.conf"
@@ -38,6 +38,9 @@ then
 	then
 		rm "/etc/bind/db.$zoneName"
 	fi
+	else
+	echo "Exiting..."
+	exit
 fi
 
 email=""
@@ -49,7 +52,7 @@ read email
 done
 date=$(date +"%Y%m%d01")
 
-printf "\$TTL 10800 \n@ IN SOA ns.$zoneName. $email.$zoneName. (\n$date\n6H\n1H\n5D\n1D )\n@ IN NS ns.$zoneName.\n@ IN MX 10 mail.$zoneName." >> /etc/bind/db.$zoneName
+printf "\$TTL 10800 \n@ IN SOA ns.$zoneName. $email.$zoneName. (\n$date\n6H\n1H\n5D\n1D )\n@ IN NS ns.$zoneName." >> /etc/bind/db.$zoneName
 nsIP=""
 while [ -z "$nsIP" ]
 do
@@ -69,12 +72,12 @@ while [ "$choice" != "0" ]
 do
 echo "------------------------------------------------"
 cat /etc/bind/db.$zoneName
-printf "\n.0 Exit\t.1 A Record\n.2 MX Record (Under construction)\n"
+printf "\n.0 Exit\t.1 A Record\n.2 MX Record\n"
 echo "Adding other record: (Choose by typing the number): "
 read choice
 case $choice in 
 	"0")
-		exit
+		choice="0"
 		;;
 	"1")
 		name=""
@@ -114,9 +117,20 @@ case $choice in
                 fi
                 done
 		printf "\n@ IN MX $prio $comp.$zoneName." >> /etc/bind/db.$zoneName
+                ip=""
+                while [ -z "$ip" ]
+                do
+                echo "Enter IPv4 for the mail server A record:"
+                read ip
+                if [ $(check_ip "$ip") != "true" ]
+                then
+                $ip=""
+                fi
+                done
+                printf "\n$comp A $ip" >> /etc/bind/db.$zoneName
 
 esac
 done
-echo "\n" >> /etc/bind/db.$zoneName
-named-checkconf named.conf
-named-checkzone $zoneName db.$zoneName
+printf " \n"
+named-checkconf /etc/bind/named.conf
+named-checkzone $zoneName /etc/bind/db.$zoneName
