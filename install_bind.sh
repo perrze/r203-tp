@@ -9,6 +9,7 @@ function check_ip(){
 
 echo "------------------------------------------------"
 echo "bind9 install script for debian"
+# Chekc if sudo or root
 if [ "$EUID" -ne 0 ]
 	then echo "Run as root or sudo"
 	exit
@@ -17,12 +18,16 @@ echo "bind9 will be installed"
 apt install -y bind9
 
 zoneName="";
+# Asking for a zone name and if the user does not enter anything, it will keep asking until the user
+# enters something.
 while [ -z "$zoneName" ]
 do
 echo "Enter zone name: "
 read zoneName
 done
 cp /etc/bind/named.conf /etc/bind/named.conf.bak
+# Checking if the zone name already exist in the named.conf file. If it does, it will print a message.
+# If it does not, it will add the zone to the named.conf file.
 if grep -Fxq "zone \"$zoneName\"{" /etc/bind/named.conf
 then
 	printf "\nZone already exist in /etc/bind/named.conf"
@@ -30,6 +35,8 @@ else
 printf "zone \"$zoneName\"{\ntype master;\nfile \"/etc/bind/db.$zoneName\";\n};" >> /etc/bind/named.conf
 fi
 passReconf="false"
+# Checking if the db.$zoneName exist. If it does, it will ask the user if he wants to remove it.
+# if user remove it, continue configuration
 if test -f "/etc/bind/db.$zoneName"
 then
 	printf "\nFile /etc/bind/db.$zoneName exist. Remove ? (y/N) :"
@@ -46,31 +53,36 @@ if [ "$passReconf" = "false" ]
 then
 email=""
 
+# Asking the user to enter an email address. If the user does not enter anything, it will keep asking
+# until the user enters something.
 while [ -z "$email" ]
 do
 	echo "Enter admin's email address:"
 	read email
 done
 date=$(date +"%Y%m%d01")
-
+# Add default configuration of DNS in db.zoneName (SOA and nameserver)
 printf "\$TTL 10800 \n@ IN SOA ns.$zoneName. $email.$zoneName. (\n$date\n6H\n1H\n5D\n1D )\n@ IN NS ns.$zoneName." >> /etc/bind/db.$zoneName
 nsIP=""
+# Asking the user to enter an IPv4 address of ns server. If the user does not enter anything, it will keep asking
+# until the user enters something.
 while [ -z "$nsIP" ]
 do
 	echo "Enter IPv4 of NS server:"
 	read nsIP
+	# Check if enter correspond to an IPv4 address
 	if [ $(check_ip "$nsIP") != "true" ]
        	then
         	nsIP=""
 	fi
 done
-
+# Adding A record to db.zoneName
 printf "\nns A $nsIP" >> /etc/bind/db.$zoneName
 
 fi
 
 choice="4"
-
+# while user doesn't exit
 while [ "$choice" != "0" ]
 do
 echo "------------------------------------------------"
@@ -82,7 +94,8 @@ case $choice in
 	"0")
 		choice="0"
 		;;
-	"1")
+	"1") # Adding a A record in db.$zoneName
+	# Same scheme as adding IPv4 to nameserver
 		name=""
 		while [ -z "$name" ]
 		do
@@ -101,7 +114,7 @@ case $choice in
 		done
 		printf "\n$name A $ip" >> /etc/bind/db.$zoneName
 		;;
-	"2")
+	"2") # Adding an MX record in db.$zoneName
 		
                 comp=""
                 while [ -z "$comp" ]
@@ -135,14 +148,15 @@ case $choice in
 esac
 done
 printf " \n"
+# Check configuration of named.conf and db.$zoneName
 named-checkconf /etc/bind/named.conf
 named-checkzone $zoneName /etc/bind/db.$zoneName
-
+# Save old conf
 mv /etc/bind/named.conf.options /etc/bind/named.conf.options.bak
 forward="8.8.8.8"
 echo "Enter nameserver fowarders: (8.8.8.8)"
 read forward
-if [ -z "$forward" ]
+if [ -z "$forward" ] #  If not entering forwarder, adding 8.8.8.8 as default forwarder
 then
 	printf "options {\n directory \"/var/cache/bind\";\nforwarders{\n8.8.8.8 ;\n};\ndnssec-validation auto;\nauth-nxdomain no;\n};" >> /etc/bind/named.conf.options
 else
