@@ -137,7 +137,10 @@ done
 printf " \n"
 named-checkconf /etc/bind/named.conf
 named-checkzone $zoneName /etc/bind/db.$zoneName
+if grep -Fxq "forwarders{" /etc/bind/named.conf.options
+then
 
+else
 forward="8.8.8.8"
 echo "Enter nameserver fowarders: (8.8.8.8)"
 read forward
@@ -152,6 +155,7 @@ else
 	done
 	printf "forwarders{\n$forward ;\n};" >> /etc/bind/named.conf.options
 fi
+fi
 echo "Enable bind9 on startup ? (y/N)"
 read response
         if [ "$response" = "y" ] | [ "$response" = "Y" ]
@@ -163,3 +167,12 @@ read response
 echo "Starting bind9..."
 systemctl start bind9
 echo systemctl status bind9
+
+echo "Reboot ? (y/N)"
+read reb
+if [ "$reboot" = "y" ] | [ "$reboot" = "Y" ]
+then
+reboot
+else
+echo "If not working, reboot"
+fi
