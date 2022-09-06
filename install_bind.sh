@@ -48,8 +48,8 @@ email=""
 
 while [ -z "$email" ]
 do
-echo "Enter admin's email address:"
-read email
+	echo "Enter admin's email address:"
+	read email
 done
 date=$(date +"%Y%m%d01")
 
@@ -61,7 +61,7 @@ do
 	read nsIP
 	if [ $(check_ip "$nsIP") != "true" ]
        	then
-        nsIP=""
+        	nsIP=""
 	fi
 done
 
@@ -86,18 +86,18 @@ case $choice in
 		name=""
 		while [ -z "$name" ]
 		do
-		echo "Enter machine name for the A record:"
-		read name
+			echo "Enter machine name for the A record:"
+			read name
 		done
 		ip=""
 		while [ -z "$ip" ]
 		do
-		echo "Enter IPv4 for the A record:"
-		read ip
-		if [ $(check_ip "$ip") != "true" ]
-		then
-		$ip=""
-		fi
+			echo "Enter IPv4 for the A record:"
+			read ip
+			if [ $(check_ip "$ip") != "true" ]
+			then
+				$ip=""
+			fi
 		done
 		printf "\n$name A $ip" >> /etc/bind/db.$zoneName
 		;;
@@ -106,29 +106,29 @@ case $choice in
                 comp=""
                 while [ -z "$comp" ]
                 do
-                echo "Enter machine name for the MX record:"
-                read comp
+	                echo "Enter machine name for the MX record:"
+        	        read comp
                 done
                 prio=""
                 while [ -z "$prio" ]
                 do
-                echo "Enter priority for the MX record :"
-                read prio
-                if [[ $prio =~ ^[0-9]+$ ]]
-                then
-                $prio=""
-                fi
+	                echo "Enter priority for the MX record :"
+        	        read prio
+                	if [[ $prio =~ ^[0-9]+$ ]]
+                	then
+                		$prio=""
+                	fi
                 done
 		printf "\n@ IN MX $prio $comp.$zoneName." >> /etc/bind/db.$zoneName
                 ip=""
                 while [ -z "$ip" ]
                 do
-                echo "Enter IPv4 for the mail server A record:"
-                read ip
-                if [ $(check_ip "$ip") != "true" ]
-                then
-                $ip=""
-                fi
+                	echo "Enter IPv4 for the mail server A record:"
+                	read ip
+                	if [ $(check_ip "$ip") != "true" ]
+                	then
+                		$ip=""
+                	fi
                 done
                 printf "\n$comp A $ip" >> /etc/bind/db.$zoneName
 
@@ -137,6 +137,21 @@ done
 printf " \n"
 named-checkconf /etc/bind/named.conf
 named-checkzone $zoneName /etc/bind/db.$zoneName
+
+forward="8.8.8.8"
+echo "Enter nameserver fowarders: (8.8.8.8)"
+read forward
+if [ -z "$forward" ]
+then
+	printf "forwarders{\n8.8.8.8 ;\n};" >> /etc/bind/named.conf.options
+else
+	while [ $(check_ip "$forward") != "true" ]
+	do
+		echo "Enter nameserver fowarders: "
+		read forward
+	done
+	printf "forwarders{\n$forward ;\n};" >> /etc/bind/named.conf.options
+fi
 echo "Enable bind9 on startup ? (y/N)"
 read response
         if [ "$response" = "y" ] | [ "$response" = "Y" ]
