@@ -7,34 +7,17 @@ sudo apt upgrade
 if [ -d "/etc/dhcp" ]
 then 
 apt-get remove --purge udhcpd
-#else
-#ip = $(ip -f inet addr show ens192 | sed -En -e 's/.*inet ([0-9.]+).*/\1/p')
-#if [ -z "$ip" ]
-#then
-#read -p echo "entrez le nom de l'interface :" int
-#sudo dhclient ens192 $int
 sudo apt-get install isc-dhcp-server
-#sudo ip addr flush dev $int
 else
 sudo apt-get install isc-dhcp-server
-#sudo ip addr flush dev $int
-#fi
 fi
 
-if [ -d "/home/user/copie_fichiers_conf" ]
-then 
-mv /etc/dhcp/dhcpd.conf /home/user/copie_fichiers_conf/cpDhcpd.conf
-touch /etc/dhcp/dhcpd.conf
-else
-mkdir /home/user/copie_fichiers_conf
-mv /etc/dhcp/dhcpd.conf /home/user/copie_fichiers_conf/cpDhcpd.conf
-mv /etc/default/isc-dhcp-server /home/user/copie_fichier_conf/cpDefault_isc-dhcp-server
-touch /etc/dhcp/dhcpd.conf
-fi
 
-read -p echo "donnez l'adresse ip à votre serveur (adresse de la machine) : " ipServ
-read -p echo "donnez le masque de sous réseau à attribuer à votre serveur (au format préfixe): " netMask1
+mv /etc/dhcp/dhcpd.conf /etc/dhcp/cpDhcpd.conf
+touch /etc/dhcp/dhcpd.conf
+
 ip addr add $ipServ"/"$netMask dev int
+ead -p echo "rentrez le nom de l'interface :" int
 
 read -p "entrez le numéro de réseau distribué par le DHCP : " netNumber
 read -p "entrez le masque de sous-réseau distribué par le DHCP : " netMask
