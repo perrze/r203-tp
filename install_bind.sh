@@ -25,14 +25,14 @@ do
 echo "Enter zone name: "
 read zoneName
 done
-cp /etc/bind/named.conf /etc/bind/named.conf.bak
+cp /etc/bind/named.conf.local /etc/bind/named.conf.local.bak
 # Checking if the zone name already exist in the named.conf file. If it does, it will print a message.
 # If it does not, it will add the zone to the named.conf file.
-if grep -Fxq "zone \"$zoneName\"{" /etc/bind/named.conf
+if grep -Fxq "zone \"$zoneName\"{" /etc/bind/named.conf.local
 then
-	printf "\nZone already exist in /etc/bind/named.conf"
+	printf "\nZone already exist in /etc/bind/named.conf.local"
 else
-printf "zone \"$zoneName\"{\ntype master;\nfile \"/etc/bind/db.$zoneName\";\n};" >> /etc/bind/named.conf
+printf "zone \"$zoneName\"{\ntype master;\nfile \"/etc/bind/db.$zoneName\";\n};" >> /etc/bind/named.conf.local
 fi
 passReconf="false"
 # Checking if the db.$zoneName exist. If it does, it will ask the user if he wants to remove it.
@@ -147,9 +147,9 @@ case $choice in
 
 esac
 done
-printf " \n"
-# Check configuration of named.conf and db.$zoneName
-named-checkconf /etc/bind/named.conf
+
+# Check configuration of named.conf.local and db.$zoneName
+named-checkconf /etc/bind/named.conf.local
 named-checkzone $zoneName /etc/bind/db.$zoneName
 # Save old conf
 mv /etc/bind/named.conf.options /etc/bind/named.conf.options.bak
