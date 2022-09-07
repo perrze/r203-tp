@@ -16,7 +16,7 @@ echo "Saving /etc/network/interfaces..."
 mv /etc/network/interfaces /etc/network/interfaces.bak
 echo "Auto configuring loopback interface"
 printf "auto lo\niface lo inet loopback\n" >> /etc/network/interfaces
-echo ip link ls
+echo "$(ip link ls)"
 echo "Select interface from above : "
 read interface
 printf "auto $interface\n" >> /etc/network/interfaces
@@ -28,6 +28,7 @@ if [ "$type" = "1" ];then
     echo "Network configured for $interface with dhcp"
     echo "Exiting..."
     exit
+fi
 
 printf "iface $interface inet static\n" >> /etc/network/interfaces
 
